@@ -11,10 +11,12 @@ function Timeline() {
   const yearNodeRef = useRef(null);
 
   useEffect(() => {
-    // Ordenar shows por data
-    const ordenados = [...shows].sort((a, b) => 
-      new Date(a.data) - new Date(b.data)
-    );
+    // Ordenar shows por data de acontecimento (cronologicamente - do mais antigo para o mais recente)
+    const ordenados = [...shows].sort((a, b) => {
+      const dataA = new Date(a.data);
+      const dataB = new Date(b.data);
+      return dataA - dataB; // Ordem crescente: mais antigo primeiro
+    });
     setShowsOrdenados(ordenados);
   }, []);
 
