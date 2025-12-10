@@ -1392,7 +1392,7 @@ function TimelineNode({ show, index, total, onPlay, onStop, registerAudio, curre
         )}
         <div className="timeline-image-container">
           <img 
-            src={show.imagem} 
+            src={`${import.meta.env.BASE_URL}${show.imagem.replace(/^\//, '')}`} 
             alt={`${show.banda} - ${show.turnê}`}
             className="timeline-image"
             loading="lazy"
