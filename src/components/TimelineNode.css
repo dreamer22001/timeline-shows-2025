@@ -41,6 +41,85 @@
   justify-content: flex-start;
 }
 
+/* Responsividade para mobile */
+@media (max-width: 768px) {
+  .timeline-marker {
+    display: none !important; /* Esconder círculo da timeline no mobile */
+  }
+
+  .timeline-content {
+    width: 100% !important; /* Ocupar toda a largura da tela */
+    max-width: 100% !important; /* Sem limite máximo */
+    margin: 0; /* Sem margens laterais */
+    padding: 20px;
+    gap: 20px; /* Manter o mesmo gap do desktop */
+    display: flex; /* Manter flex layout */
+    align-items: flex-start; /* Manter alinhamento */
+    justify-content: flex-start; /* Manter justificação */
+    border-radius: 0; /* Remover bordas arredondadas para ocupar toda a tela */
+  }
+
+  .timeline-image-container {
+    width: 120px; /* Reduzir um pouco mas manter proporção */
+    height: 120px;
+    min-width: 120px;
+    flex-shrink: 0; /* Manter não encolher */
+  }
+
+  .timeline-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Manter mesmo comportamento */
+  }
+
+  .timeline-info {
+    flex: 1;
+    min-width: 0;
+    display: flex; /* Manter flex layout */
+    flex-direction: column; /* Manter direção */
+    justify-content: space-between; /* Manter justificação */
+  }
+
+  .timeline-info-content {
+    flex: 1; /* Manter flex */
+  }
+
+  .timeline-player-controls {
+    width: 100%; /* Ajustar para mobile mas manter estrutura */
+    margin-top: 20px; /* Reduzir um pouco o espaçamento */
+    margin-left: 0; /* Remover offset negativo no mobile */
+  }
+
+  .timeline-banda {
+    font-size: 1.4rem;
+  }
+
+  .timeline-turne {
+    font-size: 1rem;
+  }
+
+  .timeline-data {
+    font-size: 0.9rem;
+  }
+}
+
+/* Ajustes para telas muito pequenas */
+@media (max-width: 480px) {
+  .timeline-content {
+    width: 100% !important; /* Ocupar toda a largura */
+    padding: 16px;
+    gap: 16px;
+  }
+}
+
+/* Ajustes para telas médias */
+@media (min-width: 481px) and (max-width: 768px) {
+  .timeline-content {
+    width: 100% !important; /* Ocupar toda a largura */
+    max-width: 100% !important;
+  }
+}
+
 .timeline-node:hover .timeline-content {
   transform: translateY(-5px);
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
@@ -460,54 +539,10 @@
   box-shadow: 0 0 0 4px rgba(136, 136, 136, 0.2);
 }
 
-/* Responsividade */
+/* Responsividade para mobile - timeline marker escondido */
 @media (max-width: 768px) {
-  .timeline-node {
-    justify-content: center !important;
-  }
-
-  .timeline-content {
-    width: 85%;
-    max-width: none;
-  }
-
   .timeline-marker {
-    left: 20px;
-    transform: translateX(-50%);
-  }
-
-  .timeline-node.left .timeline-content,
-  .timeline-node.right .timeline-content {
-    margin-left: 50px;
-  }
-
-  .timeline-content {
-    flex-direction: column;
-  }
-
-  .timeline-image-container {
-    width: 100%;
-    height: 200px;
-    min-width: auto;
-  }
-
-  .timeline-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .timeline-play-button {
-    align-self: flex-end;
-  }
-
-  .timeline-player-controls {
-    margin-top: 12px;
-  }
-
-  .timeline-controls-row {
-    width: 100%;
-    justify-content: center;
+    display: none !important; /* Esconder círculo da timeline no mobile */
   }
 }
 

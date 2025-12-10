@@ -8,9 +8,14 @@ function Timeline({ onShowPlaying, onShowStopped }) {
   const [showsOrdenados, setShowsOrdenados] = useState([]);
   const [isYearNodeVisible, setIsYearNodeVisible] = useState(false);
   const [currentPlayingId, setCurrentPlayingId] = useState(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const audioRefs = useRef({});
   const videoTitlesRef = useRef({}); // Armazenar títulos dos vídeos do YouTube
   const yearNodeRef = useRef(null);
+  const carouselRef = useRef(null);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   useEffect(() => {
     // Ordenar shows por data de acontecimento (cronologicamente - do mais antigo para o mais recente)
@@ -20,6 +25,18 @@ function Timeline({ onShowPlaying, onShowStopped }) {
       return dataA - dataB; // Ordem crescente: mais antigo primeiro
     });
     setShowsOrdenados(ordenados);
+  }, []);
+
+  // Detectar se é mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   useEffect(() => {
@@ -158,43 +175,151 @@ function Timeline({ onShowPlaying, onShowStopped }) {
     );
   };
 
+  // Funções do carrossel
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % showsOrdenados.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + showsOrdenados.length) % showsOrdenados.length);
+  };
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+  };
+
+  // Touch handlers para swipe
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const distance = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+
+    if (distance > minSwipeDistance) {
+      nextSlide();
+    } else if (distance < -minSwipeDistance) {
+      prevSlide();
+    }
+  };
+
   return (
-    <div className="timeline-container">
-      <div className="timeline-wrapper">
-        <div className="timeline-line"></div>
-        <div className="timeline-nodes">
+    <div className={`timeline-container ${isMobile ? 'mobile' : ''}`}>
+      {isMobile ? (
+        // Modo carrossel para mobile
+        <div 
+          className="carousel-container"
+          ref={carouselRef}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <div 
-            ref={yearNodeRef}
-            className={`timeline-year-node ${isYearNodeVisible ? 'visible' : ''}`}
+            className="carousel-wrapper"
+            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           >
-            <div className="timeline-year-marker"></div>
-            <div className="timeline-year-label">2025</div>
+            {showsOrdenados.map((show, index) => {
+              const previousShow = index > 0 ? showsOrdenados[index - 1] : null;
+              const showMonthDivider = shouldShowMonthDivider(show, previousShow, index);
+              
+              return (
+                <div key={`carousel-slide-${show.id}`} className="carousel-slide">
+                  {showMonthDivider && (
+                    <TimelineMonthDivider monthLabel={formatarMesAno(show.data)} />
+                  )}
+                  <TimelineNode
+                    show={show}
+                    index={index}
+                    total={showsOrdenados.length}
+                    onPlay={handlePlay}
+                    onStop={handleStop}
+                    registerAudio={registerAudio}
+                    currentPlayingId={currentPlayingId}
+                    onVideoTitleChange={handleVideoTitleChange}
+                  />
+                </div>
+              );
+            })}
           </div>
-          {showsOrdenados.map((show, index) => {
-            const previousShow = index > 0 ? showsOrdenados[index - 1] : null;
-            const showMonthDivider = shouldShowMonthDivider(show, previousShow, index);
-            
-            return (
-              <div key={`wrapper-${show.id}`}>
-                {showMonthDivider && (
-                  <TimelineMonthDivider monthLabel={formatarMesAno(show.data)} />
-                )}
-            <TimelineNode
-              key={show.id}
-              show={show}
-              index={index}
-              total={showsOrdenados.length}
-              onPlay={handlePlay}
-              onStop={handleStop}
-              registerAudio={registerAudio}
-              currentPlayingId={currentPlayingId}
-              onVideoTitleChange={handleVideoTitleChange}
-            />
-              </div>
-            );
-          })}
+          
+          {/* Controles de navegação */}
+          <button 
+            className="carousel-button carousel-button-prev"
+            onClick={prevSlide}
+            aria-label="Slide anterior"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          
+          <button 
+            className="carousel-button carousel-button-next"
+            onClick={nextSlide}
+            aria-label="Próximo slide"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          
+          {/* Indicadores */}
+          <div className="carousel-indicators">
+            {showsOrdenados.map((_, index) => (
+              <button
+                key={index}
+                className={`carousel-indicator ${index === currentSlide ? 'active' : ''}`}
+                onClick={() => goToSlide(index)}
+                aria-label={`Ir para slide ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        // Modo timeline para desktop
+        <div className="timeline-wrapper">
+          <div className="timeline-line"></div>
+          <div className="timeline-nodes">
+            <div 
+              ref={yearNodeRef}
+              className={`timeline-year-node ${isYearNodeVisible ? 'visible' : ''}`}
+            >
+              <div className="timeline-year-marker"></div>
+              <div className="timeline-year-label">2025</div>
+            </div>
+            {showsOrdenados.map((show, index) => {
+              const previousShow = index > 0 ? showsOrdenados[index - 1] : null;
+              const showMonthDivider = shouldShowMonthDivider(show, previousShow, index);
+              
+              return (
+                <div key={`wrapper-${show.id}`}>
+                  {showMonthDivider && (
+                    <TimelineMonthDivider monthLabel={formatarMesAno(show.data)} />
+                  )}
+                  <TimelineNode
+                    key={show.id}
+                    show={show}
+                    index={index}
+                    total={showsOrdenados.length}
+                    onPlay={handlePlay}
+                    onStop={handleStop}
+                    registerAudio={registerAudio}
+                    currentPlayingId={currentPlayingId}
+                    onVideoTitleChange={handleVideoTitleChange}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

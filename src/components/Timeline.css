@@ -126,32 +126,192 @@
   text-transform: capitalize;
 }
 
+/* Carrossel para mobile */
+.carousel-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  touch-action: pan-y;
+  display: flex;
+  align-items: center; /* Centralizar verticalmente */
+  justify-content: center; /* Centralizar horizontalmente */
+  min-height: calc(100vh - 200px); /* Altura mínima considerando header e footer */
+}
+
+.carousel-wrapper {
+  display: flex;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  width: 100%;
+  align-items: center; /* Centralizar slides verticalmente */
+  margin-top: 20px; /* Espaçamento superior próximo ao card */
+}
+
+.carousel-slide {
+  min-width: 100%;
+  flex-shrink: 0;
+  padding: 0; /* Remover padding lateral para card ocupar toda largura */
+  box-sizing: border-box;
+  display: flex;
+  align-items: center; /* Centralizar verticalmente */
+  justify-content: center; /* Centralizar horizontalmente */
+}
+
+.carousel-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2px solid rgba(102, 126, 234, 0.3);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  color: #667eea;
+}
+
+.carousel-button:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(102, 126, 234, 0.5);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.carousel-button:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.carousel-button-prev {
+  left: 10px;
+}
+
+.carousel-button-next {
+  right: 10px;
+}
+
+.carousel-indicators {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px;
+  flex-wrap: wrap;
+  z-index: 10;
+}
+
+.carousel-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(102, 126, 234, 0.3);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.carousel-indicator:hover {
+  background: rgba(102, 126, 234, 0.5);
+  transform: scale(1.2);
+}
+
+.carousel-indicator.active {
+  background: #667eea;
+  width: 24px;
+  border-radius: 4px;
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
+  .timeline-container.mobile {
+    padding: 20px 0;
+  }
+
+  .timeline-container.mobile .timeline-wrapper {
+    display: none;
+  }
+
+  .carousel-container {
+    padding: 0;
+    min-height: calc(100vh - 160px); /* Ajustar para mobile */
+  }
+
+  .carousel-wrapper {
+    margin-top: 20px; /* Manter margin-top no mobile */
+  }
+
+  .carousel-slide {
+    padding: 0; /* Sem padding para card ocupar toda largura */
+  }
+
+  .carousel-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .carousel-button-prev {
+    left: 5px;
+  }
+
+  .carousel-button-next {
+    right: 5px;
+  }
+
+  .carousel-indicators {
+    bottom: 15px; /* Ajustar posição no mobile */
+    gap: 6px;
+    padding: 0 15px;
+  }
+
+  .carousel-indicator {
+    width: 6px;
+    height: 6px;
+  }
+
+  .carousel-indicator.active {
+    width: 20px;
+  }
+}
+
+@media (min-width: 769px) {
+  .carousel-container {
+    display: none;
+  }
+}
+
+/* Ajustes para timeline-node no mobile */
+@media (max-width: 768px) {
+  .timeline-node {
+    justify-content: center !important;
+    margin-bottom: 30px;
+  }
+
+  .timeline-content {
+    width: 100% !important;
+    max-width: 100%;
+    padding: 20px;
+  }
+
   .timeline-line {
-    left: 20px;
+    display: none;
   }
 
-  .timeline-year-marker {
-    left: 20px;
-    transform: translateX(-50%);
-  }
-
-  .timeline-year-label {
-    left: 20px;
-    transform: translateX(-50%);
-  }
-
-  .timeline-month-marker {
-    left: 20px;
-    transform: translateX(-50%);
-  }
-
-  .timeline-month-label {
-    left: 20px;
-    transform: translateX(-50%);
-    font-size: 0.9rem;
-    padding: 4px 10px;
+  .timeline-year-node,
+  .timeline-month-divider {
+    display: none;
   }
 }
 

@@ -5,6 +5,13 @@
   z-index: 0;
 }
 
+/* Responsividade para mobile */
+@media (max-width: 768px) {
+  .App {
+    padding: 80px 0 60px 0;
+  }
+}
+
 .App::before {
   content: '';
   position: fixed;
