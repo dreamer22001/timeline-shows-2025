@@ -4,10 +4,12 @@ import TimelineMonthDivider from './TimelineMonthDivider';
 import { shows } from '../data/shows';
 import './Timeline.css';
 
-function Timeline() {
+function Timeline({ onShowPlaying, onShowStopped }) {
   const [showsOrdenados, setShowsOrdenados] = useState([]);
   const [isYearNodeVisible, setIsYearNodeVisible] = useState(false);
+  const [currentPlayingId, setCurrentPlayingId] = useState(null);
   const audioRefs = useRef({});
+  const videoTitlesRef = useRef({}); // Armazenar títulos dos vídeos do YouTube
   const yearNodeRef = useRef(null);
 
   useEffect(() => {
@@ -48,19 +50,94 @@ function Timeline() {
   }, []);
 
   const handlePlay = (showId, audioElement) => {
-    // Pausar todos os outros áudios
-    Object.keys(audioRefs.current).forEach(id => {
-      if (id !== showId.toString() && audioRefs.current[id]) {
-        audioRefs.current[id].pause();
-        audioRefs.current[id].currentTime = 0;
+    try {
+      // Pausar todos os outros áudios/players
+      Object.keys(audioRefs.current).forEach(id => {
+        if (id !== showId.toString() && audioRefs.current[id]) {
+          const player = audioRefs.current[id];
+          try {
+            // Verificar se é YouTube Player ou elemento de áudio
+            if (player && typeof player.pauseVideo === 'function') {
+              // É um YouTube Player - verificar se está pronto antes de pausar
+              try {
+                // Verificar se o player ainda está válido
+                const playerState = player.getPlayerState();
+                if (playerState !== undefined && playerState !== null) {
+                  // Player está pronto e válido, pausar
+                  if (typeof player.pauseVideo === 'function') {
+                    player.pauseVideo();
+                  }
+                  if (typeof player.stopVideo === 'function') {
+                    player.stopVideo();
+                  }
+                }
+              } catch (e) {
+                // Player não está pronto ou foi destruído, ignorar silenciosamente
+              }
+            } else if (player && typeof player.pause === 'function' && !player.paused) {
+              // É um elemento de áudio e está tocando
+              try {
+                player.pause();
+                player.currentTime = 0;
+              } catch (e) {
+                // Ignorar erros silenciosamente
+              }
+            }
+          } catch (e) {
+            // Ignorar erros silenciosamente
+          }
+        }
+      });
+      
+      // Atualizar o ID do show que está tocando
+      setCurrentPlayingId(showId);
+      
+      // Registrar o áudio/player atual
+      audioRefs.current[showId] = audioElement;
+      
+      // Notificar qual show está tocando
+      if (onShowPlaying && showsOrdenados.length > 0) {
+        const show = showsOrdenados.find(s => s.id === showId);
+        if (show) {
+          // Adicionar título do vídeo se disponível
+          const showWithTitle = {
+            ...show,
+            videoTitle: videoTitlesRef.current[showId] || null
+          };
+          onShowPlaying(showWithTitle);
+        }
       }
-    });
-    // Registrar o áudio atual
-    audioRefs.current[showId] = audioElement;
+    } catch (error) {
+      // Ignorar erros silenciosamente
+    }
+  };
+
+  const handleStop = () => {
+    // Limpar o ID do show que está tocando
+    setCurrentPlayingId(null);
+    // Notificar que o show parou
+    if (onShowStopped) {
+      onShowStopped();
+    }
   };
 
   const registerAudio = (showId, audioElement) => {
     audioRefs.current[showId] = audioElement;
+  };
+
+  const handleVideoTitleChange = (showId, title) => {
+    videoTitlesRef.current[showId] = title;
+    // Se este show está tocando, atualizar o título
+    if (currentPlayingId === showId && onShowPlaying) {
+      const show = showsOrdenados.find(s => s.id === showId);
+      if (show) {
+        const showWithTitle = {
+          ...show,
+          videoTitle: title
+        };
+        onShowPlaying(showWithTitle);
+      }
+    }
   };
 
   const formatarMesAno = (dataString) => {
@@ -70,8 +147,9 @@ function Timeline() {
     });
   };
 
-  const shouldShowMonthDivider = (currentShow, previousShow) => {
-    if (!previousShow) return false;
+  const shouldShowMonthDivider = (currentShow, previousShow, index) => {
+    // Mostrar o mês para o primeiro item também
+    if (!previousShow || index === 0) return true;
     const currentDate = new Date(currentShow.data);
     const previousDate = new Date(previousShow.data);
     return (
@@ -94,21 +172,24 @@ function Timeline() {
           </div>
           {showsOrdenados.map((show, index) => {
             const previousShow = index > 0 ? showsOrdenados[index - 1] : null;
-            const showMonthDivider = shouldShowMonthDivider(show, previousShow);
+            const showMonthDivider = shouldShowMonthDivider(show, previousShow, index);
             
             return (
               <div key={`wrapper-${show.id}`}>
                 {showMonthDivider && (
                   <TimelineMonthDivider monthLabel={formatarMesAno(show.data)} />
                 )}
-                <TimelineNode 
-                  key={show.id} 
-                  show={show} 
-                  index={index}
-                  total={showsOrdenados.length}
-                  onPlay={handlePlay}
-                  registerAudio={registerAudio}
-                />
+            <TimelineNode
+              key={show.id}
+              show={show}
+              index={index}
+              total={showsOrdenados.length}
+              onPlay={handlePlay}
+              onStop={handleStop}
+              registerAudio={registerAudio}
+              currentPlayingId={currentPlayingId}
+              onVideoTitleChange={handleVideoTitleChange}
+            />
               </div>
             );
           })}

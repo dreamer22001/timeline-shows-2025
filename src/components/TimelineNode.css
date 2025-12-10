@@ -35,6 +35,10 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   position: relative;
   z-index: 2;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
 .timeline-node:hover .timeline-content {
@@ -42,20 +46,191 @@
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
 }
 
-.timeline-image-container {
+.timeline-content.playing {
+  animation: playingPulse 2s ease-in-out infinite;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid transparent;
+}
+
+.timeline-content.playing::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  background: linear-gradient(
+    45deg,
+    #667eea,
+    #764ba2,
+    #f093fb,
+    #4facfe,
+    #00f2fe,
+    #667eea
+  );
+  background-size: 400% 400%;
+  border-radius: 18px;
+  animation: gradientShift 4s ease infinite;
+  z-index: 0;
+  opacity: 0.9;
+}
+
+.timeline-content.playing::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 70%
+  );
+  animation: shimmer 3s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Container para visualizador de áudio */
+.audio-visualizer {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 200px;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: stretch;
+  gap: 1px;
+  padding: 0;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Barras do visualizador de áudio */
+.audio-bar {
+  flex: 1;
+  min-width: 0;
+  background: linear-gradient(
+    to top,
+    rgba(102, 126, 234, 0.9),
+    rgba(118, 75, 162, 0.9),
+    rgba(240, 147, 251, 0.9),
+    rgba(79, 172, 254, 0.9),
+    rgba(0, 242, 254, 0.9)
+  );
+  border-radius: 0;
+  box-shadow: 
+    0 0 4px rgba(255, 255, 255, 0.6),
+    0 0 8px rgba(102, 126, 234, 0.4);
+  transition: height 0.1s ease-out;
+  animation: barPulse 0.3s ease-in-out infinite;
+}
+
+@keyframes barPulse {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+
+.timeline-content.playing > *:not(.audio-visualizer) {
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes playingPulse {
+  0% {
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5),
+                0 0 25px rgba(102, 126, 234, 0.3),
+                0 0 50px rgba(118, 75, 162, 0.2);
+    transform: scale(1);
+  }
+  25% {
+    box-shadow: 0 12px 35px rgba(118, 75, 162, 0.5),
+                0 0 30px rgba(118, 75, 162, 0.3),
+                0 0 60px rgba(240, 147, 251, 0.2);
+    transform: scale(1.01);
+  }
+  50% {
+    box-shadow: 0 15px 50px rgba(240, 147, 251, 0.6),
+                0 0 35px rgba(240, 147, 251, 0.4),
+                0 0 70px rgba(79, 172, 254, 0.3);
+    transform: scale(1.02);
+  }
+  75% {
+    box-shadow: 0 12px 35px rgba(79, 172, 254, 0.5),
+                0 0 30px rgba(0, 242, 254, 0.3),
+                0 0 60px rgba(102, 126, 234, 0.2);
+    transform: scale(1.01);
+  }
+  100% {
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5),
+                0 0 25px rgba(102, 126, 234, 0.3),
+                0 0 50px rgba(118, 75, 162, 0.2);
+    transform: scale(1);
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+.timeline-image-container {
+  width: 150px;
+  height: 150px;
+  min-width: 150px;
   border-radius: 12px;
   overflow: hidden;
-  margin-bottom: 16px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
 }
 
 .timeline-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   transition: transform 0.3s ease;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+  filter: brightness(1.02) contrast(1.02);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .timeline-node:hover .timeline-image {
@@ -65,13 +240,105 @@
 .timeline-info {
   color: #2c2c2c;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
   justify-content: space-between;
-  gap: 16px;
+  width: 100%;
 }
 
 .timeline-info-content {
   flex: 1;
+}
+
+.timeline-info-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.timeline-player-controls {
+  width: calc(100% + 170px);
+  margin-top: 28px;
+  margin-left: -170px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.timeline-progress-container {
+  width: 100%;
+  margin-top: 40px;
+  margin-bottom: 12px;
+}
+
+.timeline-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: height 0.2s ease;
+}
+
+.timeline-progress-bar:hover {
+  height: 8px;
+}
+
+.timeline-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 3px;
+  transition: width 0.1s linear;
+  position: relative;
+}
+
+.timeline-progress-fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background: #667eea;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.timeline-progress-bar:hover .timeline-progress-fill::after {
+  opacity: 1;
+}
+
+.timeline-time-display {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #666666;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.timeline-content.playing .timeline-time-display {
+  color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.timeline-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 8px;
+  position: relative;
+  left: 0;
+  right: 0;
 }
 
 .timeline-banda {
@@ -79,6 +346,12 @@
   font-weight: 700;
   margin: 0 0 8px 0;
   color: #1a1a1a;
+  transition: color 0.3s ease;
+}
+
+.timeline-content.playing .timeline-banda {
+  color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .timeline-turne {
@@ -86,6 +359,12 @@
   font-weight: 500;
   margin: 0 0 8px 0;
   color: #4a4a4a;
+  transition: color 0.3s ease;
+}
+
+.timeline-content.playing .timeline-turne {
+  color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .timeline-data {
@@ -93,6 +372,12 @@
   margin: 0;
   color: #666666;
   font-weight: 400;
+  transition: color 0.3s ease;
+}
+
+.timeline-content.playing .timeline-data {
+  color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .timeline-play-button {
@@ -122,9 +407,44 @@
   transform: scale(0.95);
 }
 
+.timeline-play-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.timeline-play-button:disabled:hover {
+  background: rgba(102, 126, 234, 0.1);
+  border-color: rgba(102, 126, 234, 0.3);
+  transform: none;
+  box-shadow: none;
+}
+
+.timeline-play-button.loading {
+  cursor: wait;
+  pointer-events: none;
+}
+
+.timeline-play-button.loading svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .timeline-play-button svg {
   width: 24px;
   height: 24px;
+}
+
+.timeline-play-button .loading-spinner {
+  animation: spin 1s linear infinite;
 }
 
 .timeline-marker {
@@ -161,6 +481,16 @@
     margin-left: 50px;
   }
 
+  .timeline-content {
+    flex-direction: column;
+  }
+
+  .timeline-image-container {
+    width: 100%;
+    height: 200px;
+    min-width: auto;
+  }
+
   .timeline-info {
     flex-direction: column;
     align-items: flex-start;
@@ -169,6 +499,15 @@
 
   .timeline-play-button {
     align-self: flex-end;
+  }
+
+  .timeline-player-controls {
+    margin-top: 12px;
+  }
+
+  .timeline-controls-row {
+    width: 100%;
+    justify-content: center;
   }
 }
 

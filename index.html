@@ -5,6 +5,71 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>timeline-shows</title>
+    <script>
+      // Suprimir erros de telemetria do YouTube que são bloqueados por ad blockers
+      // Esses erros não afetam a funcionalidade do player
+      (function() {
+        // Interceptar console.error
+        const originalError = console.error;
+        console.error = function(...args) {
+          const message = args.join(' ');
+          // Ignorar erros de telemetria do YouTube bloqueados por ad blockers
+          if (message.includes('ERR_BLOCKED_BY_CLIENT') && 
+              (message.includes('youtube.com') || message.includes('youtubei') || message.includes('log_event'))) {
+            return; // Não exibir o erro
+          }
+          originalError.apply(console, args);
+        };
+
+        // Interceptar console.warn também
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+          const message = args.join(' ');
+          // Ignorar warnings relacionados a telemetria do YouTube
+          if (message.includes('ERR_BLOCKED_BY_CLIENT') && 
+              (message.includes('youtube.com') || message.includes('youtubei') || message.includes('log_event'))) {
+            return; // Não exibir o warning
+          }
+          originalWarn.apply(console, args);
+        };
+
+        // Interceptar erros globais
+        if (window.addEventListener) {
+          window.addEventListener('error', function(event) {
+            if (event.message && 
+                (event.message.includes('ERR_BLOCKED_BY_CLIENT') || event.filename?.includes('www-embed-player')) &&
+                (event.message.includes('youtube.com') || event.message.includes('youtubei') || event.message.includes('log_event'))) {
+              event.preventDefault();
+              event.stopPropagation();
+              return false;
+            }
+          }, true);
+
+          // Interceptar erros não capturados
+          window.addEventListener('unhandledrejection', function(event) {
+            const reason = event.reason?.message || event.reason?.toString() || '';
+            if (reason.includes('ERR_BLOCKED_BY_CLIENT') && 
+                (reason.includes('youtube.com') || reason.includes('youtubei') || reason.includes('log_event'))) {
+              event.preventDefault();
+              return false;
+            }
+          });
+        }
+      })();
+
+      // Definir callback ANTES de carregar a API
+      // Callback global para quando a API do YouTube estiver pronta
+      window.onYouTubeIframeAPIReady = function() {
+        window.ytAPIReady = true;
+        window.YTReady = true;
+        // Disparar evento customizado
+        if (typeof window.dispatchEvent === 'function') {
+          window.dispatchEvent(new Event('youtube-api-ready'));
+        }
+        console.log('YouTube API está pronta');
+      };
+    </script>
+    <script src="https://www.youtube.com/iframe_api"></script>
   </head>
   <body>
     <div id="root"></div>
